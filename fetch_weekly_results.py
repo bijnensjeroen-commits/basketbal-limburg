@@ -160,29 +160,34 @@ def fetch_boxscore(match_id: str) -> dict | None:
 
 def summarize_boxscore(data: dict) -> dict:
     """Reduceert de volledige boxscore-JSON tot wat we nodig hebben voor
-    de 'sterren van de week' en de quarterstanden."""
+    de 'sterren van de week' en de quarterstanden.
+
+    Geeft kwartierstanden van beide ploegen terug (voor de wedstrijdcontext),
+    maar spelerspunten/-stats enkel voor de Limburgse ploeg.
+    """
     teams = []
+    limburg_spelers = []
     for tno in ("1", "2"):
         tm = data["tm"][tno]
-        players = []
-        for pid, pl in tm.get("pl", {}).items():
-            players.append({
-                "naam": pl.get("name"),
-                "punten": pl.get("sPoints"),
-                "rebounds": pl.get("sReboundsTotal"),
-                "assists": pl.get("sAssists"),
-                "steals": pl.get("sSteals"),
-                "blocks": pl.get("sBlocks"),
-                "index": pl.get("eff_1"),
-            })
-        players.sort(key=lambda p: (p["index"] or -999), reverse=True)
+        naam = tm.get("name", "")
         teams.append({
-            "naam": tm.get("name"),
+            "naam": naam,
             "score": tm.get("score"),
             "quarters": [tm.get(f"p{i}_score") for i in range(1, 5)],
-            "spelers": players,
         })
-    return {"teams": teams}
+        if is_limburg_team(naam):
+            for pid, pl in tm.get("pl", {}).items():
+                limburg_spelers.append({
+                    "naam": pl.get("name"),
+                    "punten": pl.get("sPoints"),
+                    "rebounds": pl.get("sReboundsTotal"),
+                    "assists": pl.get("sAssists"),
+                    "steals": pl.get("sSteals"),
+                    "blocks": pl.get("sBlocks"),
+                    "index": pl.get("eff_1"),
+                })
+    limburg_spelers.sort(key=lambda p: (p["index"] or -999), reverse=True)
+    return {"teams": teams, "limburg_spelers": limburg_spelers}
 
 
 # ---------------------------------------------------------------------------
