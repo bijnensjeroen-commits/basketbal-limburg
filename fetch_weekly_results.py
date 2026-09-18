@@ -191,6 +191,142 @@ def summarize_boxscore(data: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# 3. app.basketballstatsvlaanderen.be: aparte flow voor de landelijke reeksen
+# ---------------------------------------------------------------------------
+# Deze site heeft geen Genius Sports-dekking, maar toont wél kwartierstanden
+# en per-speler statistieken (punten, minuten, 3P/2P/1P) voor landelijke
+# wedstrijden, zonder login. De inhoud is client-side gerenderd (JS), dus ook
+# hier is Playwright nodig; de eigenlijke spelerstabel is een gewone HTML
+# <table>, dus die lezen we generiek uit i.p.v. met fragiele regex op platte
+# tekst (dat werkte niet betrouwbaar voor de kwartierstanden-lay-out).
+
+# Vul hier de overige Limburgse landelijke ploegen aan zodra je hun
+# club_id/team_slug kent: open de teampagina op
+# app.basketballstatsvlaanderen.be (zoek de club op via de site's zoekfunctie),
+# en kopieer het pad na "/clubs/" exact over, spaties incluis.
+BSV_TEAMS = {
+    "Stevoort (1e Landelijke Heren)": {
+        "club_id": "BVBL1267",
+        "team_slug": "BVBL1267HSE  1",
+    },
+    "Zolder (2e Landelijke Heren B)": {
+        "club_id": "BVBL1081",
+        "team_slug": "BVBL1081HSE  1",
+    },
+    "Hades Kiewit (2e Landelijke Heren B)": {
+        "club_id": "BVBL1217",
+        "team_slug": "BVBL1217HSE  1",
+    },
+    "Tongeren B (2e Landelijke Heren B)": {
+        "club_id": "BVBL1294",
+        "team_slug": "BVBL1294HSE  2",
+    },
+    "Lommel B (2e Landelijke Heren B)": {
+        "club_id": "BVBL1156",
+        "team_slug": "BVBL1156HSE  2",  # ongeverifieerd: Lommel A (HSE  1) is bevestigd, B-team is een aanname naar hetzelfde patroon
+    },
+    "Stevoort B (2e Landelijke Heren B)": {
+        "club_id": "BVBL1267",
+        "team_slug": "BVBL1267HSE  2",  # ongeverifieerd, zelfde aanname
+    },
+    "Beringen (2e Landelijke Heren B)": {
+        "club_id": "BVBL1076",
+        "team_slug": "BVBL1076HSE  1",
+    },
+    "Bree (2e Landelijke Heren B)": {
+        "club_id": "BVBL1455",
+        "team_slug": "BVBL1455HSE  1",
+    },
+}
+
+BSV_BASE = "https://app.basketballstatsvlaanderen.be"
+
+
+def extract_tables(page) -> list[list[list[str]]]:
+    """Generieke tabel-extractie: elke <table> op de pagina wordt een lijst
+    van rijen, elke rij een lijst van celteksten. Werkt onafhankelijk van
+    CSS-classes, die de site kan wijzigen."""
+    return page.eval_on_selector_all(
+        "table",
+        """tables => tables.map(t => Array.from(t.querySelectorAll('tr')).map(
+            tr => Array.from(tr.querySelectorAll('th,td')).map(c => c.innerText.trim())
+        ))"""
+    )
+
+
+def fetch_bsv_recent_game_ids(club_id: str, team_slug: str, page, max_games: int = 3) -> list[str]:
+    """Opent de teampagina en geeft de meest recente gespeelde match-ID's terug."""
+    url = f"{BSV_BASE}/clubs/{club_id}/{team_slug}"
+    page.goto(url, timeout=30000)
+    try:
+        page.wait_for_selector("text=Gespeelde wedstrijden", timeout=15000)
+    except Exception as e:
+        print(f"    [fout] teampagina niet geladen voor {club_id}/{team_slug}: {e}", file=sys.stderr)
+        return []
+
+    hrefs = page.eval_on_selector_all(
+        "a[href*='/games/']", "els => els.map(e => e.getAttribute('href'))"
+    )
+    game_ids = []
+    for href in hrefs:
+        m = re.search(r"/games/([^/?#]+)", href or "")
+        if m and m.group(1) not in game_ids:
+            game_ids.append(m.group(1))
+    return game_ids[:max_games]
+
+
+def fetch_bsv_match_detail(game_id: str, ploeg_naam_hint: str, page) -> dict:
+    """Haalt kwartierstanden (overzichtpagina) en spelerspunten (thuis/uit-
+    tabblad van de eigen ploeg) op voor één match."""
+    result = {"game_id": game_id}
+
+    # Overzicht: teamnamen, eindstand, kwartierstanden.
+    page.goto(f"{BSV_BASE}/games/{game_id}", timeout=30000)
+    try:
+        page.wait_for_selector("table, text=Fouten", timeout=15000)
+    except Exception:
+        pass
+
+    title_text = page.eval_on_selector("h1", "el => el ? el.innerText : ''") or ""
+    result["titel"] = title_text.strip()
+
+    tables = extract_tables(page)
+    result["tabellen_overzicht"] = tables  # ruw bewaard; exacte kwartier-indeling
+    # verdient een check op echte output voor we die hard parsen, net zoals
+    # bij de reeksuitslagen-parser deden we dat pas na een eerste live run.
+
+    # Bepaal of onze ploeg thuis of uit speelt, aan de hand van de titel
+    # "Team A - Team B" (Team A = thuis).
+    thuis_naam = title_text.split(" - ")[0].strip() if " - " in title_text else ""
+    kant = "home" if is_limburg_team(thuis_naam) else "away"
+
+    # Spelerspunten van de eigen ploeg.
+    page.goto(f"{BSV_BASE}/games/{game_id}/{kant}", timeout=30000)
+    try:
+        page.wait_for_selector("table", timeout=15000)
+    except Exception as e:
+        print(f"    [fout] spelerstabel niet geladen voor {game_id}/{kant}: {e}", file=sys.stderr)
+        result["spelers"] = []
+        return result
+
+    speler_tabellen = extract_tables(page)
+    spelers = []
+    for tabel in speler_tabellen:
+        if not tabel:
+            continue
+        header = [h.lower() for h in tabel[0]]
+        if not any("speler" in h for h in header):
+            continue  # niet de spelerstabel
+        for rij in tabel[1:]:
+            if not rij or not rij[0]:
+                continue
+            spelers.append(dict(zip(tabel[0], rij)))
+    result["spelers"] = spelers
+    result["kant"] = kant
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -236,6 +372,25 @@ def main():
                     data = fetch_boxscore(mid)
                     if data:
                         output["boxscores"][mid] = summarize_boxscore(data)
+
+        # 2b. app.basketballstatsvlaanderen.be: landelijke reeksen (aparte flow)
+        print("Landelijke boxscores ophalen (basketballstatsvlaanderen.be)...")
+        output["landelijke_boxscores"] = {}
+        for ploeg_naam, info in BSV_TEAMS.items():
+            print(f"  - {ploeg_naam}")
+            try:
+                game_ids = fetch_bsv_recent_game_ids(info["club_id"], info["team_slug"], page)
+            except Exception as e:
+                print(f"    [fout] kon wedstrijdenlijst niet ophalen: {e}", file=sys.stderr)
+                continue
+            print(f"    {len(game_ids)} recente match(es) gevonden")
+            for gid in game_ids:
+                if gid in output["landelijke_boxscores"]:
+                    continue
+                try:
+                    output["landelijke_boxscores"][gid] = fetch_bsv_match_detail(gid, ploeg_naam, page)
+                except Exception as e:
+                    print(f"    [fout] match {gid} niet verwerkt: {e}", file=sys.stderr)
 
         browser.close()
 
