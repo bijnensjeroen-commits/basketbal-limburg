@@ -56,6 +56,15 @@ def is_limburg_team(name: str) -> bool:
     return any(p.lower() in name.lower() for p in LIMBURG_PLOEGEN)
 
 
+# Elke gespeelde wedstrijd in de "Uitslagen"-sectie ziet er als platte tekst
+# uit als: "<dd/mm/jjjj> <Thuisploeg naam> <score> - <score> <Bezoeker naam>
+# Digitaal wedstrijdformulier". Toekomstige wedstrijden (nog geen score) in
+# diezelfde sectie matchen dit patroon niet en worden dus vanzelf overgeslagen.
+UITSLAG_PATROON = re.compile(
+    r"(\d{2}/\d{2}/\d{4})\s+(.+?)\s+(\d{1,3})\s*-\s*(\d{1,3})\s+(.+?)\s+Digitaal wedstrijdformulier"
+)
+
+
 def fetch_reeks_resultaten(reeks_id: str) -> list[dict]:
     """Haalt de uitslagenlijst op van een reeks-pagina op basketbal.vlaanderen."""
     url = f"https://www.basketbal.vlaanderen/resultaten/reeks/{reeks_id}"
@@ -67,20 +76,28 @@ def fetch_reeks_resultaten(reeks_id: str) -> list[dict]:
         return []
 
     soup = BeautifulSoup(resp.text, "html.parser")
-    resultaten = []
+    full_text = soup.get_text(" ", strip=True)
 
-    # NOTE: de exacte CSS-selectors hieronder zijn een startpunt. Basketbal
-    # Vlaanderen kan zijn markup wijzigen; als dit niets oplevert, open de
-    # pagina in de browser-inspector en pas de selectors aan.
-    for row in soup.select("[class*='result'], [class*='match'], tr"):
-        text = row.get_text(" ", strip=True)
-        # Verwacht patroon: "<datum> <thuisploeg> <score>-<score> <bezoeker>"
-        m = re.search(r"(\d+)\s*-\s*(\d+)", text)
-        if not m:
+    # Isoleer enkel het stuk tussen de "Uitslagen"-kop en de "Kalender"-kop,
+    # zodat we niet per ongeluk toekomstige wedstrijden of menu-tekst meepakken.
+    section_match = re.search(r"Uitslagen(.*?)Kalender", full_text, re.S)
+    if not section_match:
+        print(f"  [waarschuwing] geen 'Uitslagen'-sectie gevonden voor {reeks_id}"
+              f" (reeks nog niet gestart, of pagina-structuur gewijzigd)", file=sys.stderr)
+        return []
+
+    section = section_match.group(1)
+    resultaten = []
+    for datum, thuis, s1, s2, bezoeker, in [m for m in UITSLAG_PATROON.findall(section)]:
+        thuis, bezoeker = thuis.strip(), bezoeker.strip()
+        if not (is_limburg_team(thuis) or is_limburg_team(bezoeker)):
             continue
-        if not is_limburg_team(text):
-            continue
-        resultaten.append({"raw_text": text, "score": m.group(0)})
+        resultaten.append({
+            "datum": datum,
+            "thuisploeg": thuis,
+            "bezoekers": bezoeker,
+            "score": f"{s1}-{s2}",
+        })
 
     return resultaten
 
@@ -106,7 +123,15 @@ def fetch_genius_schedule_html(comp_id: str, playwright_page) -> str:
     url = f"https://hosted.dcd.shared.geniussports.com/embednf/BB/en/competition/{comp_id}/schedule"
     playwright_page.goto(url, timeout=30000)
     body_text = playwright_page.inner_text("body")
-    data = json.loads(body_text)
+    try:
+        data = json.loads(body_text)
+    except json.JSONDecodeError:
+        # Vaak een teken dat de host (bv. de cloud-IP van GitHub Actions) is
+        # geblokkeerd door bot-detectie, en een andere pagina (403, CAPTCHA,
+        # of iets anders dan de verwachte JSON) heeft teruggekregen.
+        print(f"    [fout] geen geldige JSON terugontvangen. Eerste 300 tekens "
+              f"van het antwoord:\n    {body_text[:300]!r}", file=sys.stderr)
+        raise
     return data["html"]
 
 
