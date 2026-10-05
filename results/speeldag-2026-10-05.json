@@ -1,0 +1,175 @@
+{
+  "opgehaald_op": "2026-10-05T06:18:15.376936",
+  "reeksuitslagen": {
+    "TDM1": [],
+    "TDM2A": [],
+    "1e Landelijke Heren": [],
+    "2e Landelijke Heren": [],
+    "1e Landelijke Dames": [],
+    "2e Landelijke Dames": []
+  },
+  "boxscores": {},
+  "landelijke_boxscores": {
+    "BVBL26279100LAHSE11ALA": {
+      "game_id": "BVBL26279100LAHSE11ALA",
+      "titel": "Red Vic Wilrijk HSE A - Stevoort BBC HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "away"
+    },
+    "BVBL26279100LAHSE11AAJ": {
+      "game_id": "BVBL26279100LAHSE11AAJ",
+      "titel": "Stevoort BBC HSE A - Holstra WINGS Wevelgem-Moorsele HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    },
+    "BVBL26279100LAHSE11AHA": {
+      "game_id": "BVBL26279100LAHSE11AHA",
+      "titel": "e5 Sgolba Aalter HSE A - Stevoort BBC HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "away"
+    },
+    "BVBL26279100LAHSE21CNM": {
+      "game_id": "BVBL26279100LAHSE21CNM",
+      "titel": "KBBC Zolder vzw HSE A - Fellows Legal Brokers Ekeren BBC HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    },
+    "BVBL26279100LAHSE21CFN": {
+      "game_id": "BVBL26279100LAHSE21CFN",
+      "titel": "Guco Lier HSE C - KBBC Zolder vzw HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "away"
+    },
+    "BVBL26279100LAHSE21CNI": {
+      "game_id": "BVBL26279100LAHSE21CNI",
+      "titel": "KBBC Zolder vzw HSE A - L.S.V. Basket Landen HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    },
+    "BVBL26279100LAHSE21CHF": {
+      "game_id": "BVBL26279100LAHSE21CHF",
+      "titel": "Hades Kiewit BBC HSE A - Guco Lier HSE C",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    },
+    "BVBL26279100LAHSE21CCH": {
+      "game_id": "BVBL26279100LAHSE21CCH",
+      "titel": "Geranimo Bornem Basket HSE A - Hades Kiewit BBC HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "away"
+    },
+    "BVBL26279100LAHSE21CHA": {
+      "game_id": "BVBL26279100LAHSE21CHA",
+      "titel": "Hades Kiewit BBC HSE A - 2B|SAFE Tienen HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    },
+    "BVBL26279100LAHSE21CDI": {
+      "game_id": "BVBL26279100LAHSE21CDI",
+      "titel": "BasKet Tongeren HSE B - L.S.V. Basket Landen HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    },
+    "BVBL26279100LAHSE21CGD": {
+      "game_id": "BVBL26279100LAHSE21CGD",
+      "titel": "Titans Basketball Bonheiden HSE A - BasKet Tongeren HSE B",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "away"
+    },
+    "BVBL26279100LAHSE21CED": {
+      "game_id": "BVBL26279100LAHSE21CED",
+      "titel": "Zuiderkempen Diamonds HSE A - BasKet Tongeren HSE B",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "away"
+    },
+    "BVBL26279100LAHSE21CKD": {
+      "game_id": "BVBL26279100LAHSE21CKD",
+      "titel": "BBC Croonen Lommel HSE B - BasKet Tongeren HSE B",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    },
+    "BVBL26279100LAHSE21CKE": {
+      "game_id": "BVBL26279100LAHSE21CKE",
+      "titel": "BBC Croonen Lommel HSE B - Zuiderkempen Diamonds HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    },
+    "BVBL26279100LAHSE21CLK": {
+      "game_id": "BVBL26279100LAHSE21CLK",
+      "titel": "KBBC Miners Beringen HSE A - BBC Croonen Lommel HSE B",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    },
+    "BVBL26279100LAHSE21CGB": {
+      "game_id": "BVBL26279100LAHSE21CGB",
+      "titel": "Titans Basketball Bonheiden HSE A - Stevoort BBC HSE B",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "away"
+    },
+    "BVBL26279100LAHSE21CIB": {
+      "game_id": "BVBL26279100LAHSE21CIB",
+      "titel": "L.S.V. Basket Landen HSE A - Stevoort BBC HSE B",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "away"
+    },
+    "BVBL26279100LAHSE21CBG": {
+      "game_id": "BVBL26279100LAHSE21CBG",
+      "titel": "Stevoort BBC HSE B - Titans Basketball Bonheiden HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    },
+    "BVBL26279100LAHSE21CAL": {
+      "game_id": "BVBL26279100LAHSE21CAL",
+      "titel": "2B|SAFE Tienen HSE A - KBBC Miners Beringen HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "away"
+    },
+    "BVBL26279100LAHSE21CML": {
+      "game_id": "BVBL26279100LAHSE21CML",
+      "titel": "Fellows Legal Brokers Ekeren BBC HSE A - KBBC Miners Beringen HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "away"
+    },
+    "BVBL26279100LAHSE21CJC": {
+      "game_id": "BVBL26279100LAHSE21CJC",
+      "titel": "Bree Basket HSE A - Geranimo Bornem Basket HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    },
+    "BVBL26279100LAHSE21CAJ": {
+      "game_id": "BVBL26279100LAHSE21CAJ",
+      "titel": "2B|SAFE Tienen HSE A - Bree Basket HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "away"
+    },
+    "BVBL26279100LAHSE21CJM": {
+      "game_id": "BVBL26279100LAHSE21CJM",
+      "titel": "Bree Basket HSE A - Fellows Legal Brokers Ekeren BBC HSE A",
+      "tabellen_overzicht": [],
+      "spelers": [],
+      "kant": "home"
+    }
+  }
+}
